@@ -1,0 +1,144 @@
+.page { display: flex; flex-direction: column; gap: 16px; }
+
+/* ── Summary bar ── */
+.summaryBar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.sumItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 18px 16px;
+  gap: 4px;
+  text-align: center;
+}
+
+.sumValue {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.03em;
+  font-family: var(--font-mono);
+}
+
+.sumValue.green { color: var(--green-500); }
+.sumValue.amber { color: var(--amber-500); }
+
+.sumLabel {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* ── Pills ── */
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill {
+  padding: 7px 16px;
+  border-radius: 99px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition: all var(--transition);
+}
+
+.pill:hover { border-color: var(--teal-400); color: var(--text-primary); }
+
+.pillActive {
+  background: var(--navy-800);
+  border-color: var(--navy-800);
+  color: white;
+}
+
+/* ── Table ── */
+.tableWrap { overflow: auto; }
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table thead tr {
+  border-bottom: 2px solid var(--border);
+}
+
+.table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.row {
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background var(--transition);
+}
+
+.row:hover { background: var(--surface-2); }
+
+.row:last-child { border-bottom: none; }
+
+.rowAbnormal { background: rgba(254, 226, 226, 0.3); }
+.rowAbnormal:hover { background: rgba(254, 226, 226, 0.5); }
+
+.table td {
+  padding: 14px 16px;
+  vertical-align: middle;
+}
+
+.labName { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.labNote { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.5; max-width: 280px; }
+
+.categoryTag {
+  font-size: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 3px 8px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.valueCell {
+  font-size: 15px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.unit { font-size: 12px; font-weight: 400; color: var(--text-muted); }
+
+.value_normal   { color: var(--green-500); }
+.value_high     { color: var(--red-500); }
+.value_low      { color: var(--amber-500); }
+.value_critical { color: #9d174d; }
+
+.refRange {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.dateCell {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.providerCell {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
