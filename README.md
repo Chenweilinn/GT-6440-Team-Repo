@@ -1,173 +1,220 @@
-# Patient Portal – Workflow Guide
+# Patient Portal
+
+A FHIR-powered patient health portal with an integrated AI chatbot. Pulls real patient data from a FHIR server and lets patients (or clinicians) ask questions about medications, lab results, conditions, and appointments using Claude AI.
 
 ---
 
-## 1. How to Launch the App
+## Tech Stack
 
-### Backend
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React + TypeScript + Tailwind CSS |
+| Backend | Python FastAPI |
+| FHIR Server | HAPI FHIR R4 Demo (`hapi.fhir.org/baseR4`) |
+| Auth | SMART on FHIR (OAuth 2.0 + PKCE) |
+| AI Chatbot | Claude API (Anthropic) |
+
+---
+
+## Project Structure
+
+```
+.
+├── frontend/
+│   └── src/
+│       ├── types/          # TypeScript interfaces for FHIR resources
+│       ├── contexts/       # PatientContext (state + localStorage)
+│       ├── services/       # API calls to backend
+│       ├── components/     # Sidebar, PatientHeader, Chatbot
+│       └── pages/          # Dashboard, Medications, Conditions, Labs, Appointments
+└── backend/
+    ├── main.py             # FastAPI app + serves built frontend
+    └── app/
+        ├── routers/        # fhir.py, chat.py, smart.py
+        └── services/       # fhir_client.py (httpx proxy to FHIR)
+```
+
+---
+
+## Running the App
+
+### Option A – Single URL (Production-style)
+
+Build the frontend once, then run only the backend. Everything is served from **`http://localhost:8000`**.
 
 ```bash
+# 1. Build frontend
+cd frontend
+npm install
+npm run build           # outputs to frontend/dist/
+
+# 2. Start backend (serves API + built frontend)
+cd ../backend
+cp .env.example .env    # add ANTHROPIC_API_KEY
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
+
+Open **http://localhost:8000**
+
+---
+
+### Option B – Development (Two Servers)
+
+Run backend and frontend separately with hot reload.
+
+```bash
+# Terminal 1 – Backend
 cd backend
-cp .env.example .env        # add your ANTHROPIC_API_KEY inside .env
+cp .env.example .env    # add ANTHROPIC_API_KEY
 pip install -r requirements.txt
 uvicorn main:app --reload
 # runs at http://localhost:8000
-```
 
-### Frontend
-
-```bash
+# Terminal 2 – Frontend
 cd frontend
 npm install
 npm run dev
 # runs at http://localhost:5173
 ```
 
-Open **http://localhost:5173** in your browser.
+Open **http://localhost:5173**
 
 ---
 
-## 2. Mode A – Direct HAPI FHIR (No Login)
+### Environment Variables
 
-This is the simplest way to use the portal. Data is pulled directly from the public HAPI FHIR R4 Demo Server (`https://hapi.fhir.org/baseR4`).
+**`backend/.env`**
+```
+ANTHROPIC_API_KEY=your_key_here     # required for chatbot
+HAPI_FHIR_BASE=https://hapi.fhir.org/baseR4   # optional override
+```
+
+---
+
+## Usage Modes
+
+### Mode A – Direct HAPI FHIR (No Login)
+
+The simplest way. Data is pulled directly from the public HAPI FHIR R4 Demo Server. No authentication required.
 
 ```
-User opens http://localhost:5173
+User opens the app
          │
          ▼
-  ┌─────────────────┐
-  │  Enter Patient  │  e.g. patient ID: 131941663
-  │       ID        │
-  └────────┬────────┘
-           │
-           ▼
-  Frontend calls Backend
+  Enter a Patient ID          e.g. 131941663
+         │
+         ▼
+  Frontend → Backend → HAPI FHIR
   GET /api/fhir/patient/{id}
-           │
-           ▼
-  Backend calls HAPI FHIR
-  GET https://hapi.fhir.org/baseR4/Patient/{id}
-           │
-           ▼
+         │
+         ▼
   Portal Dashboard opens
-  showing Medications, Conditions,
-  Lab Results, Appointments
-           │
-           ▼
-  Patient clicks 💬 chatbot
-  asks "explain my lab result"
-           │
-           ▼
-  Backend calls Claude API
-  (with patient data as context)
-           │
-           ▼
-  AI response shown in chat
+  (Medications, Conditions, Lab Results, Appointments)
+         │
+         ▼
+  Open 💬 chatbot → ask questions
+         │
+         ▼
+  Backend → Claude API (with patient data as context)
+         │
+         ▼
+  AI response in chat
 ```
 
-**No login required.** Any valid HAPI FHIR patient ID works.
+**Demo patient ID with data:** `131941663`
 
 ---
 
-## 3. Mode B – SMART on FHIR EHR Launch
+### Mode B – SMART on FHIR EHR Launch
 
-SMART on FHIR is an authorization standard that lets apps integrate securely with EHR systems using OAuth 2.0 + PKCE. The **SMART Health IT Launcher** simulates an EHR environment for testing.
+SMART on FHIR is an authorization standard built on OAuth 2.0 + PKCE. It allows apps to integrate securely with EHR systems. The **SMART Health IT Launcher** simulates this EHR environment for testing.
 
-> **Note:** In this sandbox, you log in as a **practitioner (Dr. ...)** and select a patient — simulating a clinician launching the app from within an EHR. In a real production patient portal, patients would log in with their own credentials (standalone launch).
+> **Note:** In the sandbox you log in as a **practitioner (Dr. ...)** and select a patient — simulating a clinician launching the app from within a hospital EHR. In a real patient-facing portal, patients would authenticate with their own credentials (standalone launch pattern).
 
-### Setup
+#### Setup
 
 1. Go to **https://launch.smarthealthit.org**
-2. Set **App's Launch URL** to `http://localhost:5173/launch`
+2. Set **App's Launch URL** →  `http://localhost:8000/launch` (single server(server both ui+backend))
 3. Click **Launch**
 
-### Flow Diagram
+#### Flow
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │                  SMART Health IT Launcher                    │
 │         (simulates a hospital EHR environment)               │
 └──────────────────────┬───────────────────────────────────────┘
-                       │ 1. Redirects to your app with
-                       │    ?iss=<fhir-server>&launch=<token>
+                       │ 1. Redirects to your app:
+                       │    /launch?iss=<fhir-server>&launch=<token>
+                       │
+                       │    iss    = which FHIR server to use
+                       │    launch = token identifying the EHR context
                        ▼
-             http://localhost:5173/launch
+                  /launch (LaunchPage.tsx)
                        │
-                       │ 2. LaunchPage.tsx fetches
-                       │    /.well-known/smart-configuration
-                       │    generates PKCE code_verifier + code_challenge
-                       │    saves to sessionStorage
-                       │
-                       │ 3. Redirects browser to Authorization Server
+                       │ 2. Fetches iss/.well-known/smart-configuration
+                       │    Generates PKCE code_verifier + code_challenge
+                       │    Saves both to sessionStorage
+                       │    Redirects browser to authorization server
                        ▼
          ┌─────────────────────────────┐
          │   SMART Launcher Login Page │
-         │   You see: Dr. Smith, etc.  │
-         │   → Select a practitioner   │
-         │   → Select a patient        │
+         │   Select a practitioner     │
+         │   Select a patient          │
          └──────────────┬──────────────┘
-                        │ 4. Auth server redirects to
+                        │ 3. Auth server redirects to:
                         │    /callback?code=<auth_code>&state=<state>
                         ▼
-             http://localhost:5173/callback
+                 /callback (CallbackPage.tsx)
                         │
-                        │ 5. CallbackPage.tsx exchanges
-                        │    auth code + code_verifier
-                        │    for access token + patient ID
-                        │
-                        │ 6. Fetches Patient resource
-                        │    using the access token
+                        │ 4. Verifies state matches sessionStorage (CSRF check)
+                        │    POSTs code + code_verifier to token endpoint
+                        │    Receives access_token + patient ID
+                        │    Fetches Patient resource with token
                         ▼
-             http://localhost:5173/portal/dashboard
+              /portal/dashboard
                         │
-                        │ 7. Portal loads patient data
-                        │    from the SMART FHIR server
-                        │    (not HAPI — the launcher's own server)
+                        │ 5. Portal loads all patient data
+                        │    from the SMART FHIR server using Bearer token
                         ▼
                    Portal is open ✓
 ```
 
-### What Each Step Does
-
-| Step | Where | What happens |
-|------|-------|--------------|
-| 1 | Launcher → `/launch` | Passes FHIR server URL (`iss`) and launch token |
-| 2 | `LaunchPage.tsx` | Discovers auth endpoints, generates PKCE, builds auth URL |
-| 3 | Auth server | Practitioner logs in, selects patient |
-| 4 | Auth server → `/callback` | Returns one-time authorization code |
-| 5 | `CallbackPage.tsx` | Exchanges code for access token (PKCE verified) |
-| 6 | Frontend → Backend → FHIR | Fetches patient data with Bearer token |
-| 7 | Portal | Displays data, chatbot available |
+| Step | What happens |
+|------|-------------|
+| 1 | Launcher passes the FHIR server URL (`iss`) and a launch context token |
+| 2 | App discovers OAuth endpoints, generates PKCE, redirects to auth server |
+| 3 | Practitioner logs in and selects a patient in the EHR simulator |
+| 4 | App exchanges one-time auth code (+ PKCE verifier) for an access token |
+| 5 | Portal displays patient data fetched with the Bearer token |
 
 ---
 
-## 4. Data Sources
+## Data Sources
 
-| Resource | FHIR Type | Endpoint |
-|----------|-----------|----------|
-| Patient demographics | `Patient` | `/Patient/{id}` |
+All data is read live from the FHIR server. The backend stores nothing.
+
+| Section | FHIR Resource | Query |
+|---------|--------------|-------|
+| Demographics | `Patient` | `/Patient/{id}` |
 | Medications | `MedicationRequest` | `/MedicationRequest?patient={id}` |
-| Diagnoses | `Condition` | `/Condition?patient={id}` |
-| Lab results | `Observation` | `/Observation?patient={id}&category=laboratory` |
+| Conditions | `Condition` | `/Condition?patient={id}` |
+| Lab Results | `Observation` | `/Observation?patient={id}&category=laboratory` |
 | Appointments | `Appointment` | `/Appointment?patient={id}` |
 
-All data is read directly from the FHIR server — the backend stores nothing.
-
 ---
 
-## 5. Chatbot
+## Chatbot
 
-The chatbot uses **Claude AI** (Anthropic). When you open the chat panel:
+The floating 💬 button opens an AI chat panel powered by Claude (Anthropic).
 
-1. The frontend fetches all patient data (medications, conditions, labs, appointments)
-2. Builds a text summary and sends it to the backend with your message
-3. Backend passes the patient context + message to Claude
-4. Claude responds with a patient-friendly explanation
+When first opened, the chatbot fetches all patient data and builds a context summary. Every message you send includes this context so Claude can answer specific questions about the patient's health records.
 
 Example questions:
 - *"What are my current medications?"*
-- *"Explain my lab results"*
+- *"Explain my latest lab results"*
 - *"Do I have any upcoming appointments?"*
 - *"What does this diagnosis mean?"*
 
-Requires `ANTHROPIC_API_KEY` set in `backend/.env`.
+Requires `ANTHROPIC_API_KEY` in `backend/.env`.

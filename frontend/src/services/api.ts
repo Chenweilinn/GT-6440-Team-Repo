@@ -1,6 +1,6 @@
 import type { Patient, Medication, Condition, LabResult, Appointment } from '../types/fhir';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
 
 function authHeaders(token?: string): HeadersInit {
   const h: HeadersInit = {};
