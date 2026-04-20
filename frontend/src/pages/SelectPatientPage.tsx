@@ -3,11 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { usePatient } from '../contexts/PatientContext';
 import { fetchPatient } from '../services/api';
 
-const DEMO_PATIENTS = [
-  { id: '592500', label: 'Demo Patient A' },
-  { id: '2694602', label: 'Demo Patient B' },
-  { id: '1855785', label: 'Demo Patient C' },
-];
 
 export default function SelectPatientPage() {
   const [patientId, setPatientId] = useState('');
@@ -48,7 +43,7 @@ export default function SelectPatientPage() {
                 value={patientId}
                 onChange={e => setPatientId(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && loadPatient(patientId)}
-                placeholder="e.g. 592500"
+                placeholder="e.g. 131942539"
                 className="flex-1 text-sm border border-border rounded-lg px-3 py-2 outline-none focus:border-primary"
               />
               <button
@@ -60,23 +55,6 @@ export default function SelectPatientPage() {
               </button>
             </div>
             {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
-          </section>
-
-          {/* Quick demo buttons */}
-          <section>
-            <p className="text-xs text-gray-500 mb-2">Quick demo:</p>
-            <div className="flex gap-2 flex-wrap">
-              {DEMO_PATIENTS.map(p => (
-                <button
-                  key={p.id}
-                  onClick={() => loadPatient(p.id)}
-                  disabled={loading}
-                  className="text-xs border border-border rounded-lg px-3 py-1.5 hover:border-primary hover:text-primary transition-colors disabled:opacity-40"
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
           </section>
 
           {/* SMART on FHIR */}
