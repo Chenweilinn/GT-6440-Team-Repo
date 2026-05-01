@@ -46,13 +46,19 @@ export default function Chatbot() {
 
   useEffect(() => {
     if (!isOpen || contextLoaded || !patient) return;
-    Promise.all([
+    Promise.allSettled([
       fetchMedications(patient.id, accessToken, fhirBaseUrl),
       fetchConditions(patient.id, accessToken, fhirBaseUrl),
       fetchLabs(patient.id, accessToken, fhirBaseUrl),
       fetchAppointments(patient.id, accessToken, fhirBaseUrl),
-    ]).then(([meds, conditions, labs, appointments]) => {
-      setContext(buildContext({ patient, meds, conditions, labs, appointments }));
+    ]).then(([medsRes, condRes, labsRes, apptRes]) => {
+      setContext(buildContext({
+        patient,
+        meds: medsRes.status === 'fulfilled' ? medsRes.value : [],
+        conditions: condRes.status === 'fulfilled' ? condRes.value : [],
+        labs: labsRes.status === 'fulfilled' ? labsRes.value : [],
+        appointments: apptRes.status === 'fulfilled' ? apptRes.value : [],
+      }));
       setContextLoaded(true);
     });
   }, [isOpen, contextLoaded, patient]);
@@ -115,12 +121,12 @@ export default function Chatbot() {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
-              placeholder="Ask about your health data…"
+              placeholder={contextLoaded ? "Ask about your health data…" : "Loading your health data…"}
               className="flex-1 text-sm border border-border rounded-lg px-3 py-2 outline-none focus:border-primary"
             />
             <button
               onClick={handleSend}
-              disabled={sending || !input.trim()}
+              disabled={sending || !input.trim() || !contextLoaded}
               className="bg-primary text-white px-3 py-2 rounded-lg text-sm disabled:opacity-40 hover:opacity-90 transition-opacity"
             >
               Send
