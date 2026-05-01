@@ -242,7 +242,7 @@ Example questions:
 
 The chatbot is deployed and live. No additional setup is needed to use it.
 
-**Note on first load:** The backend is hosted on Render's free tier, which puts the server to sleep after 15 minutes of inactivity. If the app hasn't been used recently, the first chat message may take 30–60 seconds to respond while the server wakes up. After waiting, you may need to go back to the home page, login again, then retry the AI chatbot.
+**Note on first load:** The backend is hosted on Render's free tier, which puts the server to sleep after 15 minutes of inactivity. If the app hasn't been used recently, the first chat message may take 30-60 seconds to respond while the server wakes up. After waiting, you may need to go back to the home page, login again, then retry the AI chatbot.
 
 **Live deployment:** The app is hosted on Vercel (frontend) and Render (backend). The live URL is [gt-6440-team-repo.vercel.app](https://gt-6440-team-repo.vercel.app).
 
