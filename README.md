@@ -12,7 +12,9 @@ A FHIR-powered patient health portal with an integrated AI chatbot. Pulls real p
 | Backend | Python FastAPI |
 | FHIR Server | HAPI FHIR R4 Demo (`hapi.fhir.org/baseR4`) |
 | Auth | SMART on FHIR (OAuth 2.0 + PKCE) |
-| AI Chatbot | Claude API (Anthropic) |
+| AI Chatbot | Claude API (Anthropic) — claude-sonnet-4-6 |
+| Frontend Hosting | Vercel |
+| Backend Hosting | Render (Python 3, Free Tier) |
 
 ---
 
