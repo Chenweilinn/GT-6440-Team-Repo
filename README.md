@@ -40,6 +40,27 @@ A FHIR-powered patient health portal with an integrated AI chatbot. Pulls real p
 
 ## Running the App
 
+The app is fully deployed and publicly accessible. No local setup is needed.
+
+- Open [gt-6440-team-repo.vercel.app](https://gt-6440-team-repo.vercel.app) in your browser
+- Enter a patient ID on the home page (demo ID: `131941663`)
+- Browse the patient's medications, conditions, lab results, and appointments
+- Click the chat button in the bottom right to ask the AI chatbot questions about the patient's health data
+
+### Using the AI Chatbot
+
+- Once you are on the patient dashboard, click the chat bubble in the bottom right corner
+- Wait a moment for your health data to load (the input box will say "Loading your health data..." until it is ready)
+- Type a question and press Send or hit Enter
+- The chatbot has access to the patient's medications, conditions, lab results, and appointments and will answer based on that data
+- Example questions: "What medications am I on?", "Explain my latest lab results", "What conditions do I have?"
+
+**Note on first load:** The backend is hosted on Render's free tier, which puts the server to sleep after 15 minutes of inactivity. If the app hasn't been used recently, the first chat message may take 30–60 seconds to respond while the server wakes up. After waiting, you may need to go back to the home page, login again, then retry the AI chatbot.
+
+---
+
+## Sprint 2 — Running the App Locally
+
 ### Option A – Single URL (Production-style)
 
 Build the frontend once, then run only the backend. Everything is served from **`http://localhost:8000`**.
