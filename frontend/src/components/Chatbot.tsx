@@ -52,13 +52,19 @@ export default function Chatbot() {
 
   useEffect(() => {
     if (!isOpen || contextLoaded || !patient) return;
-    Promise.all([
+    Promise.allSettled([
       fetchMedications(patient.id, accessToken, fhirBaseUrl),
       fetchConditions(patient.id, accessToken, fhirBaseUrl),
       fetchLabs(patient.id, accessToken, fhirBaseUrl),
       fetchAppointments(patient.id, accessToken, fhirBaseUrl),
-    ]).then(([meds, conditions, labs, appointments]) => {
-      setContext(buildContext({ patient, meds, conditions, labs, appointments }));
+    ]).then(([medsRes, condRes, labsRes, apptRes]) => {
+      setContext(buildContext({
+        patient,
+        meds: medsRes.status === 'fulfilled' ? medsRes.value : [],
+        conditions: condRes.status === 'fulfilled' ? condRes.value : [],
+        labs: labsRes.status === 'fulfilled' ? labsRes.value : [],
+        appointments: apptRes.status === 'fulfilled' ? apptRes.value : [],
+      }));
       setContextLoaded(true);
     });
   }, [isOpen, contextLoaded, patient]);

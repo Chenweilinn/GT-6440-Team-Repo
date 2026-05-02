@@ -12,7 +12,9 @@ A FHIR-powered patient health portal with an integrated AI chatbot. Pulls real p
 | Backend | Python FastAPI |
 | FHIR Server | HAPI FHIR R4 Demo (`hapi.fhir.org/baseR4`) |
 | Auth | SMART on FHIR (OAuth 2.0 + PKCE) |
-| AI Chatbot | Claude API (Anthropic) |
+| AI Chatbot | Claude API (Anthropic) — claude-sonnet-4-6 |
+| Frontend Hosting | Vercel |
+| Backend Hosting | Render (Python 3, Free Tier) |
 
 ---
 
@@ -37,6 +39,27 @@ A FHIR-powered patient health portal with an integrated AI chatbot. Pulls real p
 ---
 
 ## Running the App
+
+The app is fully deployed and publicly accessible. No local setup is needed.
+
+- Open [gt-6440-team-repo.vercel.app](https://gt-6440-team-repo.vercel.app) in your browser
+- Enter a patient ID on the home page (demo ID: `131941663`)
+- Browse the patient's medications, conditions, lab results, and appointments
+- Click the chat button in the bottom right to ask the AI chatbot questions about the patient's health data
+
+### Using the AI Chatbot
+
+- Once you are on the patient dashboard, click the chat bubble in the bottom right corner
+- Wait a moment for your health data to load (the input box will say "Loading your health data..." until it is ready)
+- Type a question and press Send or hit Enter
+- The chatbot has access to the patient's medications, conditions, lab results, and appointments and will answer based on that data
+- Example questions: "What medications am I on?", "Explain my latest lab results", "What conditions do I have?"
+
+**Note on first load:** The backend is hosted on Render's free tier, which puts the server to sleep after 15 minutes of inactivity. If the app hasn't been used recently, the first chat message may take 30–60 seconds to respond while the server wakes up. After waiting, you may need to go back to the home page, login again, then retry the AI chatbot.
+
+---
+
+## Sprint 2 — Running the App Locally
 
 ### Option A – Single URL (Production-style)
 
@@ -217,4 +240,10 @@ Example questions:
 - *"Do I have any upcoming appointments?"*
 - *"What does this diagnosis mean?"*
 
-Requires `ANTHROPIC_API_KEY` in `backend/.env`.
+The chatbot is deployed and live. No additional setup is needed to use it.
+
+**Note on first load:** The backend is hosted on Render's free tier, which puts the server to sleep after 15 minutes of inactivity. If the app hasn't been used recently, the first chat message may take 30-60 seconds to respond while the server wakes up. After waiting, you may need to go back to the home page, login again, then retry the AI chatbot.
+
+**Live deployment:** The app is hosted on Vercel (frontend) and Render (backend). The live URL is [gt-6440-team-repo.vercel.app](https://gt-6440-team-repo.vercel.app).
+
+**Demo patient ID with data:** `131941663` (enter this on the home page to access a patient with medications, conditions, lab results, and appointments).
