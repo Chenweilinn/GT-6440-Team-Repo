@@ -22,10 +22,12 @@ async def chat(req: ChatRequest):
     import anthropic
 
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    messages = [{"role": m.role, "content": m.content} for m in req.history]
+    messages.append({"role": "user", "content": req.message})
     message = client.messages.create(
         model="claude-sonnet-4-6",
         max_tokens=1024,
         system=SYSTEM_PROMPT.format(context=req.patient_context),
-        messages=[{"role": "user", "content": req.message}],
+        messages=messages,
     )
     return {"response": message.content[0].text}

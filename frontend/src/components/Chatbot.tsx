@@ -3,6 +3,12 @@ import { usePatient } from '../contexts/PatientContext';
 import { fetchMedications, fetchConditions, fetchLabs, fetchAppointments, sendChatMessage } from '../services/api';
 import type { ChatMessage } from '../types/fhir';
 
+const SUGGESTED_PROMPTS = [
+  'What are my current medications?',
+  'Do I have any abnormal lab results?',
+  'When is my next appointment?',
+];
+
 function buildContext(data: {
   patient: { name: string; birthDate: string; gender: string };
   meds: { name: string; status: string; dosageText?: string }[];
@@ -18,10 +24,10 @@ ${data.meds.map(m => `- ${m.name} (${m.status})${m.dosageText ? ': ' + m.dosageT
 CONDITIONS (${data.conditions.length}):
 ${data.conditions.map(c => `- ${c.name} (${c.clinicalStatus})`).join('\n') || 'None'}
 
-LAB RESULTS (${data.labs.length}):
+LAB RESULTS (${data.labs.length}${data.labs.length > 20 ? ', showing first 20' : ''}):
 ${data.labs.slice(0, 20).map(l => `- ${l.name}: ${l.value} ${l.unit}${l.interpretation ? ' [' + l.interpretation + ']' : ''}`).join('\n') || 'None'}
 
-APPOINTMENTS (${data.appointments.length}):
+APPOINTMENTS (${data.appointments.length}${data.appointments.length > 10 ? ', showing first 10' : ''}):
 ${data.appointments.slice(0, 10).map(a => `- ${a.description} on ${a.start} (${a.status})`).join('\n') || 'None'}`.trim();
 }
 
@@ -57,14 +63,14 @@ export default function Chatbot() {
     });
   }, [isOpen, contextLoaded, patient]);
 
-  const handleSend = async () => {
-    const text = input.trim();
+  const handleSend = async (text = input.trim()) => {
     if (!text || sending) return;
     setInput('');
+    const history = messages.slice(1);
     setMessages(prev => [...prev, { role: 'user', content: text }]);
     setSending(true);
     try {
-      const reply = await sendChatMessage(text, context || `Patient: ${patient?.name || 'Unknown'}`);
+      const reply = await sendChatMessage(text, context || `Patient: ${patient?.name || 'Unknown'}`, history);
       setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
     } catch (e: any) {
       setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${e.message}` }]);
@@ -102,6 +108,19 @@ export default function Chatbot() {
                 </div>
               </div>
             ))}
+            {messages.length === 1 && contextLoaded && (
+              <div className="flex flex-col gap-1.5">
+                {SUGGESTED_PROMPTS.map(prompt => (
+                  <button
+                    key={prompt}
+                    onClick={() => handleSend(prompt)}
+                    className="text-left text-xs px-3 py-2 rounded-lg bg-gray-50 border border-border text-text-h hover:bg-primary-bg transition-colors"
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            )}
             {sending && (
               <div className="flex justify-start">
                 <div className="bg-gray-100 px-3 py-2 rounded-xl text-sm text-gray-400">Thinking…</div>
@@ -115,12 +134,13 @@ export default function Chatbot() {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
-              placeholder="Ask about your health data…"
-              className="flex-1 text-sm border border-border rounded-lg px-3 py-2 outline-none focus:border-primary"
+              disabled={!contextLoaded}
+              placeholder={contextLoaded ? 'Ask about your health data…' : 'Loading your health data…'}
+              className="flex-1 text-sm border border-border rounded-lg px-3 py-2 outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-400"
             />
             <button
-              onClick={handleSend}
-              disabled={sending || !input.trim()}
+              onClick={() => handleSend()}
+              disabled={sending || !input.trim() || !contextLoaded}
               className="bg-primary text-white px-3 py-2 rounded-lg text-sm disabled:opacity-40 hover:opacity-90 transition-opacity"
             >
               Send

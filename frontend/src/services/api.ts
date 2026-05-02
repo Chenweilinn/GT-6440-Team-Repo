@@ -1,4 +1,4 @@
-import type { Patient, Medication, Condition, LabResult, Appointment } from '../types/fhir';
+import type { Patient, Medication, Condition, LabResult, Appointment, ChatMessage } from '../types/fhir';
 
 const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
 
@@ -43,11 +43,15 @@ export async function fetchAppointments(patientId: string, token?: string, fhirB
   return parseAppointments(data);
 }
 
-export async function sendChatMessage(message: string, patientContext: string): Promise<string> {
+export async function sendChatMessage(
+  message: string,
+  patientContext: string,
+  history: ChatMessage[] = [],
+): Promise<string> {
   const resp = await fetch(`${API_BASE}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, patient_context: patientContext }),
+    body: JSON.stringify({ message, patient_context: patientContext, history }),
   });
   if (!resp.ok) {
     const err = await resp.json().catch(() => ({}));
